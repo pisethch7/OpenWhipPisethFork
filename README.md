@@ -34,8 +34,8 @@ sudo apt install xdotool
 ## Development
 
 ```bash
-git clone https://github.com/dashty8/openwhip
-cd openwhip
+git clone https://github.com/dashty8/openwhip-plus
+cd openwhip-plus
 npm install
 npm start
 ```

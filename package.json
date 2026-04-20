@@ -26,12 +26,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dashty8/openwhip.git"
+    "url": "git+https://github.com/dashty8/openwhip-plus.git"
   },
   "bugs": {
-    "url": "https://github.com/dashty8/openwhip/issues"
+    "url": "https://github.com/dashty8/openwhip-plus/issues"
   },
-  "homepage": "https://github.com/dashty8/openwhip#readme",
+  "homepage": "https://github.com/dashty8/openwhip-plus#readme",
   "files": [
     "main.js",
     "preload.js",
