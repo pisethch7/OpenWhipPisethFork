@@ -14,7 +14,7 @@ This fork adds:
 
 ```bash
 npm install -g openwhip-plus
-openwhip
+openwhip-plus
 ```
 
 Windows and macOS work out of the box. Linux needs `xdotool` for keyboard automation:
