@@ -6,7 +6,7 @@ let electronBinary;
 try {
   electronBinary = require('electron');
 } catch (e) {
-  console.error('Could not load Electron. Try: npm install -g @dashty8/openwhip');
+  console.error('Could not load Electron. Try: npm install -g openwhip-plus');
   process.exit(1);
 }
 

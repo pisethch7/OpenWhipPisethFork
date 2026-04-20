@@ -13,7 +13,7 @@ This fork adds:
 ## Install + run
 
 ```bash
-npm install -g @dashty8/openwhip
+npm install -g openwhip-plus
 openwhip
 ```
 

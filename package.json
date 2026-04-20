@@ -1,5 +1,5 @@
 {
-  "name": "@dashty8/openwhip",
+  "name": "openwhip-plus",
   "version": "1.2.1",
   "description": "Whip Claude (or any CLI) into shape — with a configurable phrase list and Unicode support",
   "license": "MIT",
@@ -32,9 +32,6 @@
     "url": "https://github.com/dashty8/openwhip/issues"
   },
   "homepage": "https://github.com/dashty8/openwhip#readme",
-  "publishConfig": {
-    "access": "public"
-  },
   "files": [
     "main.js",
     "preload.js",
