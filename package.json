@@ -1,6 +1,6 @@
 {
   "name": "@dashty8/openwhip",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Whip Claude (or any CLI) into shape — with a configurable phrase list and Unicode support",
   "license": "MIT",
   "author": "dashty8",

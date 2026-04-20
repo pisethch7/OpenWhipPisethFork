@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, screen, clipboard } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, screen, clipboard, systemPreferences, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -299,8 +299,34 @@ ipcMain.on('save-phrases', (_e, list) => {
     savePhrases(phrases);
   }
 });
+function ensureMacAccessibility() {
+  if (process.platform !== 'darwin') return true;
+  // Passing `true` asks macOS to show the standard Accessibility prompt if
+  // the process isn't trusted yet. Returns the current trust state.
+  const trusted = systemPreferences.isTrustedAccessibilityClient(true);
+  if (trusted) return true;
+
+  const choice = dialog.showMessageBoxSync({
+    type: 'warning',
+    title: 'Accessibility required',
+    message: 'OpenWhip needs Accessibility access to type phrases.',
+    detail:
+      'macOS should have just opened a prompt. If not, open:\n\n' +
+      '  System Settings → Privacy & Security → Accessibility\n\n' +
+      'Enable the entry for Electron (or OpenWhip), then quit and relaunch this app.',
+    buttons: ['Open Accessibility Settings', 'Continue anyway'],
+    defaultId: 0,
+    cancelId: 1,
+  });
+  if (choice === 0) {
+    shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility');
+  }
+  return false;
+}
+
 ipcMain.on('start-whipping', () => {
   if (!Array.isArray(phrases) || phrases.length === 0) return;
+  if (!ensureMacAccessibility()) return;
   if (configWindow && configWindow.isVisible()) configWindow.hide();
   if (overlay && overlay.isVisible()) return;
   toggleOverlay();
