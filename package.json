@@ -1,0 +1,58 @@
+{
+  "name": "@dashty8/openwhip",
+  "version": "1.2.0",
+  "description": "Whip Claude (or any CLI) into shape — with a configurable phrase list and Unicode support",
+  "license": "MIT",
+  "author": "dashty8",
+  "main": "main.js",
+  "bin": {
+    "openwhip": "bin/openwhip.js"
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "electron",
+    "tray",
+    "overlay",
+    "cli",
+    "claude",
+    "whip"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dashty8/openwhip.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dashty8/openwhip/issues"
+  },
+  "homepage": "https://github.com/dashty8/openwhip#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "main.js",
+    "preload.js",
+    "preload-config.js",
+    "overlay.html",
+    "config.html",
+    "sounds",
+    "icon",
+    "bin/openwhip.js",
+    "README.md"
+  ],
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "pack": "npm pack"
+  },
+  "dependencies": {
+    "electron": "^33.0.0",
+    "koffi": "^2.9.0"
+  }
+}
