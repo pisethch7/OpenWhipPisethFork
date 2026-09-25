@@ -4,6 +4,9 @@ const fs = require('fs');
 const os = require('os');
 const { execFile } = require('child_process');
 
+const PLATFORM = process.platform;
+let linuxAutomationReady = false;
+
 // Only one instance — a second launch would fight for the cache dir and spew
 // "Unable to move the cache: Access is denied." errors.
 if (!app.requestSingleInstanceLock()) {
@@ -11,13 +14,18 @@ if (!app.requestSingleInstanceLock()) {
   process.exit(0);
 }
 
+app.on('second-instance', () => {
+  showConfigWindow();
+});
+
 // GPU shader disk cache isn't needed for a transparent overlay + canvas; skipping
 // it also silences the GPU cache warnings on Windows.
 app.commandLine.appendSwitch('disable-gpu-shader-disk-cache');
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 
 // ── Win32 FFI (Windows only) ────────────────────────────────────────────────
 let keybd_event, VkKeyScanW, SendInput, INPUT, INPUT_SIZE;
-if (process.platform === 'win32') {
+if (PLATFORM === 'win32') {
   try {
     const koffi = require('koffi');
     const user32 = koffi.load('user32.dll');
@@ -61,13 +69,14 @@ let overlayReady = false;
 let spawnQueued = false;
 
 const DEFAULT_PHRASES = [
-  'FASTER',
-  'FASTER',
-  'FASTER',
   'GO FASTER',
-  'Faster CLANKER',
-  'Work FASTER',
   'Speed it up clanker',
+  'Faster CLANKER',
+  'FASTER',
+  'FASTER',
+  'FASTER',
+  'Work FASTER',
+  'Work FASTER',
 ];
 let phrases = DEFAULT_PHRASES.slice();
 
@@ -106,13 +115,13 @@ const KEYUP      = 0x0002;
 function refocusPreviousApp() {
   const delayMs = 80;
   const run = () => {
-    if (process.platform === 'win32') {
+    if (PLATFORM === 'win32') {
       if (!keybd_event) return;
       keybd_event(VK_MENU, 0, 0, 0);
       keybd_event(VK_TAB, 0, 0, 0);
       keybd_event(VK_TAB, 0, KEYUP, 0);
       keybd_event(VK_MENU, 0, KEYUP, 0);
-    } else if (process.platform === 'darwin') {
+    } else if (PLATFORM === 'darwin') {
       const script = [
         'tell application "System Events"',
         '  key down command',
@@ -125,7 +134,8 @@ function refocusPreviousApp() {
           console.warn('refocus previous app (Cmd+Tab) failed:', err.message);
         }
       });
-    } else if (process.platform === 'linux') {
+    } else if (PLATFORM === 'linux') {
+      if (!linuxAutomationReady) return;
       execFile('xdotool', ['key', '--clearmodifiers', 'alt+Tab'], err => {
         if (err) {
           console.warn('refocus previous app (Alt+Tab) failed. Install xdotool:', err.message);
@@ -141,7 +151,7 @@ function createTrayIconFallback() {
   if (fs.existsSync(p)) {
     const img = nativeImage.createFromPath(p);
     if (!img.isEmpty()) {
-      if (process.platform === 'darwin') img.setTemplateImage(true);
+      if (PLATFORM === 'darwin') img.setTemplateImage(true);
       return img;
     }
   }
@@ -160,7 +170,7 @@ async function tryIcnsTrayImage(icnsPath) {
 // Quick Look thumbnails handle .icns; copy to temp if the file is inside ASAR (QL needs a real path).
 async function getTrayIcon() {
   const iconDir = path.join(__dirname, 'icon');
-  if (process.platform === 'win32') {
+  if (PLATFORM === 'win32') {
     const file = path.join(iconDir, 'icon.ico');
     if (fs.existsSync(file)) {
       const img = nativeImage.createFromPath(file);
@@ -168,7 +178,7 @@ async function getTrayIcon() {
     }
     return createTrayIconFallback();
   }
-  if (process.platform === 'darwin') {
+  if (PLATFORM === 'darwin') {
     const file = path.join(iconDir, 'AppIcon.icns');
     if (fs.existsSync(file)) {
       const fromPath = nativeImage.createFromPath(file);
@@ -300,7 +310,7 @@ ipcMain.on('save-phrases', (_e, list) => {
   }
 });
 function ensureMacAccessibility() {
-  if (process.platform !== 'darwin') return true;
+  if (PLATFORM !== 'darwin') return true;
   // Passing `true` asks macOS to show the standard Accessibility prompt if
   // the process isn't trusted yet. Returns the current trust state.
   const trusted = systemPreferences.isTrustedAccessibilityClient(true);
@@ -338,11 +348,11 @@ function sendMacro() {
   const pool = (Array.isArray(phrases) && phrases.length > 0) ? phrases : DEFAULT_PHRASES;
   const chosen = pool[Math.floor(Math.random() * pool.length)];
 
-  if (process.platform === 'win32') {
+  if (PLATFORM === 'win32') {
     sendMacroWindows(chosen);
-  } else if (process.platform === 'darwin') {
+  } else if (PLATFORM === 'darwin') {
     sendMacroMac(chosen);
-  } else if (process.platform === 'linux') {
+  } else if (PLATFORM === 'linux') {
     sendMacroLinux(chosen);
   }
 }
@@ -437,6 +447,11 @@ function sendMacroMac(text) {
 }
 
 function sendMacroLinux(text) {
+  if (!linuxAutomationReady) {
+    console.warn('linux macro skipped: xdotool is not installed or not on PATH.');
+    return;
+  }
+
   execFile(
     'xdotool',
     [
@@ -452,8 +467,31 @@ function sendMacroLinux(text) {
   );
 }
 
+function ensureCrossPlatformAutomation() {
+  if (PLATFORM !== 'linux') {
+    linuxAutomationReady = true;
+    return;
+  }
+
+  execFile('which', ['xdotool'], err => {
+    if (err) {
+      linuxAutomationReady = false;
+      dialog.showMessageBoxSync({
+        type: 'warning',
+        title: 'Linux automation required',
+        message: 'OpenWhip needs xdotool for keyboard input on Linux.',
+        detail: 'Install it with:\n\n  sudo apt install xdotool\n\nThen restart the app.',
+        buttons: ['OK'],
+      });
+      return;
+    }
+    linuxAutomationReady = true;
+  });
+}
+
 // ── App lifecycle ───────────────────────────────────────────────────────────
 app.whenReady().then(async () => {
+  ensureCrossPlatformAutomation();
   loadPhrases();
   tray = new Tray(await getTrayIcon());
   tray.setToolTip('OpenWhip - click to configure');
@@ -465,6 +503,7 @@ app.whenReady().then(async () => {
     ])
   );
   tray.on('click', handleTrayClick);
+  showConfigWindow();
 });
 
 app.on('before-quit', () => { app.isQuitting = true; });

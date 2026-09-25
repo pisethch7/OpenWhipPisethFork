@@ -5,10 +5,28 @@
   * { margin: 0; padding: 0; cursor: none; }
   html, body { overflow: hidden; background: transparent; width: 100%; height: 100%; }
   canvas { display: block; }
+  #status {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    color: rgba(255, 255, 255, 0.9);
+    font: 700 14px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    letter-spacing: 0.08em;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, -6px) scale(0.96);
+    transition: opacity 120ms ease, transform 120ms ease;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
+  }
+  #status.show {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
+  <div id="status" aria-hidden="true"></div>
 <script>
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -24,6 +42,7 @@ const P = {
   gravity:        1.2,   // normal gravity
   dropGravity:    0.95,    // gravity when dropping/despawning
   damping:        0.96,  // velocity retention per frame (1 = no loss)
+  physicsStepMs:  1000 / 60,
   constraintIters:20,     // higher = stiffer chain
   maxStretchRatio: 1.2,  // hard cap for per-link stretch during fast whips
 
@@ -70,6 +89,7 @@ const P = {
 
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
+const statusEl = document.getElementById('status');
 let W, H;
 
 function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
@@ -84,6 +104,8 @@ let lastCrackTime = 0;
 let whipSpawnTime = 0;
 let handleAngle = P.baseTargetAngle;
 let handleAngVel = 0;
+let crackCount = 0;
+let statusTimer = null;
 
 const WHIP_CRACK_SOUNDS = ['sounds/A.mp3', 'sounds/B.mp3', 'sounds/C.mp3', 'sounds/D.mp3', 'sounds/E.mp3'];
 
@@ -167,7 +189,15 @@ function playCrackSound() {
   a.play().catch(() => {});
 }
 
-function updateHandleAim() {
+function showCrackStatus() {
+  crackCount += 1;
+  statusEl.textContent = `CRACK ${crackCount}`;
+  statusEl.classList.add('show');
+  clearTimeout(statusTimer);
+  statusTimer = setTimeout(() => statusEl.classList.remove('show'), 520);
+}
+
+function updateHandleAim(step) {
   if (dropping) return;
   const mvx = mouseX - prevMouseX;
   const mvy = mouseY - prevMouseY;
@@ -178,9 +208,9 @@ function updateHandleAim() {
   );
   const target = P.baseTargetAngle + delta;
   const err = wrapPi(target - handleAngle);
-  handleAngVel += err * P.handleSpring;
-  handleAngVel *= P.handleAngularDamping;
-  handleAngle = wrapPi(handleAngle + handleAngVel);
+  handleAngVel += err * P.handleSpring * step;
+  handleAngVel *= Math.pow(P.handleAngularDamping, step);
+  handleAngle = wrapPi(handleAngle + handleAngVel * step);
 }
 
 function applyBasePose() {
@@ -295,22 +325,23 @@ function applyWallCollisions() {
 }
 
 // ── Physics step ────────────────────────────────────────────────────────────
-function update() {
+function update(step = 1) {
   if (!whip) return;
 
   const g = dropping ? P.dropGravity : P.gravity;
-  updateHandleAim();
+  updateHandleAim(step);
 
   // Verlet integration
   const start = dropping ? 0 : 1; // if dropping, handle is free too
   for (let i = start; i < whip.length; i++) {
     const p = whip[i];
-    const vx = (p.x - p.px) * P.damping;
-    const vy = (p.y - p.py) * P.damping;
+    const damping = Math.pow(P.damping, step);
+    const vx = (p.x - p.px) * damping;
+    const vy = (p.y - p.py) * damping;
     p.px = p.x;
     p.py = p.y;
     p.x += vx;
-    p.y += vy + g;
+    p.y += vy + g * step;
   }
 
   // Pin handle to mouse
@@ -357,11 +388,12 @@ function update() {
   const tip = whip[whip.length - 1];
   const tipVel = Math.hypot(tip.x - tip.px, tip.y - tip.py);
 
-  if (!dropping && tipVel > P.crackSpeed) {
+  if (!dropping && tipVel / step > P.crackSpeed) {
     const now = Date.now();
     if (now - whipSpawnTime >= P.firstCrackGraceMs && now - lastCrackTime > P.crackCooldownMs) {
       lastCrackTime = now;
       playCrackSound();
+      showCrackStatus();
       window.bridge.whipCrack();
     }
   }
@@ -428,8 +460,12 @@ function draw() {
 }
 
 // ── Main loop ───────────────────────────────────────────────────────────────
-function loop() {
-  update();
+let lastFrameTime = 0;
+function loop(timestamp) {
+  const elapsed = lastFrameTime ? timestamp - lastFrameTime : P.physicsStepMs;
+  const step = clamp(elapsed / P.physicsStepMs, 0.5, 2);
+  lastFrameTime = timestamp;
+  update(step);
   draw();
   requestAnimationFrame(loop);
 }
@@ -438,6 +474,8 @@ loop();
 // ── IPC from main process ───────────────────────────────────────────────────
 window.bridge.onSpawnWhip(() => {
   whip = spawnWhip(mouseX || W / 2, mouseY || H / 2);
+  crackCount = 0;
+  statusEl.classList.remove('show');
   dropping = false;
   prevMouseX = mouseX;
   prevMouseY = mouseY;
