@@ -1,12 +1,12 @@
 {
-  "name": "openwhip-plus",
+  "name": "openwhip-piseth-fork",
   "version": "1.2.2",
   "description": "Whip Claude (or any CLI) into shape — with a configurable phrase list and Unicode support",
   "license": "MIT",
-  "author": "dashty8",
+  "author": "pisethch7",
   "main": "main.js",
   "bin": {
-    "openwhip-plus": "bin/openwhip-plus.js"
+    "openwhip-piseth-fork": "bin/openwhip-plus.js"
   },
   "os": [
     "darwin",
@@ -26,12 +26,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dashty8/openwhip-plus.git"
+    "url": "git+https://github.com/pisethch7/OpenWhipPisethFork.git"
   },
   "bugs": {
-    "url": "https://github.com/dashty8/openwhip-plus/issues"
+    "url": "https://github.com/pisethch7/OpenWhipPisethFork/issues"
   },
-  "homepage": "https://github.com/dashty8/openwhip-plus#readme",
+  "homepage": "https://github.com/pisethch7/OpenWhipPisethFork#readme",
   "files": [
     "main.js",
     "preload.js",

@@ -15,15 +15,15 @@ This fork adds:
 ### Windows
 
 ```bash
-npm install -g openwhippisethfork
-openwhippisethfork
+npm install -g openwhip-piseth-fork
+openwhip-piseth-fork
 ```
 
 ### macOS
 
 ```bash
-npm install -g openwhippisethfork
-openwhippisethfork
+npm install -g openwhip-piseth-fork
+openwhip-piseth-fork
 ```
 
 ### Linux
@@ -32,8 +32,8 @@ Install the required keyboard automation dependency, then run:
 
 ```bash
 sudo apt install xdotool
-npm install -g openwhippisethfork
-openwhippisethfork
+npm install -g openwhip-piseth-fork
+openwhip-piseth-fork
 ```
 
 This app is designed to work on Windows, macOS, and Linux.
@@ -50,14 +50,14 @@ This app is designed to work on Windows, macOS, and Linux.
 
 ```bash
 git clone https://github.com/pisethch7/OpenWhipPisethFork
-cd openwhippisethfork
+cd OpenWhipPisethFork
 npm install
 npm start
 ```
 
 ## Credits
 
-Originally based on GitFrog1111's [OpenWhip](https://github.com/GitFrog1111/OpenWhip) and openwhip-plus's [openwhip-plus](https://github.com/dashty8/openwhip-plus). MIT licensed.
+Originally based on GitFrog1111's [OpenWhip](https://github.com/GitFrog1111/OpenWhip). MIT licensed.
 
 ## Roadmap
 
