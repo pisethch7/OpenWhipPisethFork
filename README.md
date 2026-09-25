@@ -1,4 +1,4 @@
-# OpenWhip (dashty8 fork)
+# OpenWhip Piseth Fork
 
 ![Whip divider](assets/divider.png)
 
@@ -12,16 +12,31 @@ This fork adds:
 
 ## Install + run
 
+### Windows
+
 ```bash
 npm install -g openwhip-plus
 openwhip-plus
 ```
 
-Windows and macOS work out of the box. Linux needs `xdotool` for keyboard automation:
+### macOS
+
+```bash
+npm install -g openwhip-plus
+openwhip-plus
+```
+
+### Linux
+
+Install the required keyboard automation dependency, then run:
 
 ```bash
 sudo apt install xdotool
+npm install -g openwhip-plus
+openwhip-plus
 ```
+
+This app is designed to work on Windows, macOS, and Linux.
 
 ## Controls
 
@@ -42,7 +57,7 @@ npm start
 
 ## Credits
 
-Originally based on [GitFrog1111/OpenWhip](https://github.com/GitFrog1111/OpenWhip). MIT licensed.
+Originally based on GitFrog1111's [OpenWhip](https://github.com/GitFrog1111/OpenWhip). MIT licensed.
 
 ## Roadmap
 
@@ -51,3 +66,4 @@ Originally based on [GitFrog1111/OpenWhip](https://github.com/GitFrog1111/OpenWh
 - [x] Persisted config
 - [ ] Clipboard-paste fallback for terminals that swallow `KEYEVENTF_UNICODE`
 - [ ] Crack counter
+"# OpenWhipPisethFork" 
